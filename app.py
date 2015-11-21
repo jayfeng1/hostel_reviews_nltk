@@ -4,7 +4,9 @@ Created on Sat Nov  7 14:08:15 2015
 
 @author: jay
 
-Twitter API Client for Hostel Reviews
+TWITTER API CLIENT
+Summary: Reads in twitter timeline and responds to tweets 
+that are about hostels and a keyword. 
 """
 import os
 os.chdir("/Users/jay/Dropbox/Coding Projects/Hostel Reviews NLTK")
@@ -104,8 +106,11 @@ def update_hostel_status(api, tweet):
     if status_errors is not None: #check for errors in tweet mention
         tweet_status = status_errors
     else: 
-        analysis = hostel_main(url, key) #call hostel main function
-        tweet_status = compute_status(analysis, screen_name, key) 
+        try:
+            analysis = hostel_main(url, key) #call hostel main function
+            tweet_status = compute_status(analysis, screen_name, key) 
+        except:
+            tweet_status = screen_name + ' YOU BROKE SOMETHING'
     api.update_status(status = tweet_status, in_reply_to_status_id = reply_id)
 
             
@@ -120,18 +125,3 @@ if __name__ == '__main__':
     for tweet in tweets:
         update_hostel_status(api, tweet)
     store_tweet_ids(all_tweets) #store tweets so it doesn't repeat next time
-    
-        
-"""
-def test_class():
-    #os.chdir("/Users/jay/Dropbox/Coding Projects/Hostel Reviews NLTK")
-    url =  "http://www.hostelworld.com/hosteldetails.php/Black-Swan/Barcelona/66913/reviews/"
-    ht =        HostelReview(url)
-    first_url = ht.url + "1?period=all"
-    xml =       ht.request_xml(first_url)
-    pages =     ht.find_end(xml)
-    df =        ht.scrape_to_df(ht.url, pages)
-    key = 'wifi'
-    df =        ht.count_amenities(df, key)
-    results =   ht.sentiment_analysis(key, df)
-"""            
