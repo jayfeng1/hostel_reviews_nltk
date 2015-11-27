@@ -9,7 +9,7 @@ Summary: Reads in twitter timeline and responds to tweets
 that are about hostels and a keyword. 
 """
 import os
-os.chdir("/Users/jay/Dropbox/Coding Projects/Hostel Reviews NLTK")
+#os.chdir("path_to_HostelReview")
 from hostel_review import HostelReview
 import logging
 import tweepy
@@ -28,15 +28,16 @@ def login():
 def hostel_main(url, key):
     """ Run the main analysis program of the hostel
         Scrapes the url and returns a dictionary of analysis of the hostel
+        Explanation in blog
     """
     ht =        HostelReview(url) #initiate hostel review class
     logger.info('Hostel instantiated')
-    first_url = ht.url + "1?period=all"
-    xml =       ht.request_xml(first_url)
-    pages =     ht.find_end(xml)
-    df =        ht.scrape_to_df(ht.url, pages)
-    df =        ht.count_amenities(df, key)
-    return      ht.sentiment_analysis(key, df)
+    first_url = ht.url + "1?period=all" 
+    xml =       ht.request_xml(first_url) #get xml of first page
+    pages =     ht.find_end(xml) #extract the number of pages to scrape
+    df =        ht.scrape_to_df(ht.url, pages) #scape pages and transpose to dataframe
+    df =        ht.count_amenities(df, key) #create a new column for the keyword features
+    return      ht.sentiment_analysis(key, df) #return dictionary of analysis
     
 def get_word(txt):
     """ Find keyword within the tweet, else return None """
@@ -96,7 +97,6 @@ def catch_errors(url, key, screen_name):
         return screen_name + " Not the right url buddy"
     elif key is None:
         return screen_name + " Can't find an amenity to search for buddy, or you are a bad speller"
-        #tweet "Not correct url or no url found. I am not smart enough to tell the difference"
     
 
 def update_hostel_status(api, tweet):
@@ -110,7 +110,7 @@ def update_hostel_status(api, tweet):
             analysis = hostel_main(url, key) #call hostel main function
             tweet_status = compute_status(analysis, screen_name, key) 
         except:
-            tweet_status = screen_name + ' YOU BROKE SOMETHING'
+            tweet_status = screen_name + ' YOU BROKE SOMETHING' #adhoc message for breaking the program
     api.update_status(status = tweet_status, in_reply_to_status_id = reply_id)
 
             
@@ -120,8 +120,8 @@ if __name__ == '__main__':
     
     auth = login() #login 
     api = tweepy.API(auth)
-    all_tweets = api.mentions_timeline()
-    tweets = get_unread_statuses(all_tweets)
-    for tweet in tweets:
-        update_hostel_status(api, tweet)
+    all_tweets = api.mentions_timeline() #grab all tweets from timeline
+    tweets = get_unread_statuses(all_tweets) #save the unread mentions
+    for tweet in tweets: 
+        update_hostel_status(api, tweet) #reply to each mention
     store_tweet_ids(all_tweets) #store tweets so it doesn't repeat next time
